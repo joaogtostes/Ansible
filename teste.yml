@@ -5,3 +5,5 @@
   - name: Reproduzir uma mensagem
     debug:
       msg: "ESTOU RODEI BEM"
+  - name: gerando um whoami
+    win_whoami:
