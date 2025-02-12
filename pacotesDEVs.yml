@@ -11,6 +11,6 @@
       win_chocolatey:
         name: "{{ item }}"
         state: latest
-      loop: "{{ pacotes }}"
+      loop: "{{ teste }}"
       
       
