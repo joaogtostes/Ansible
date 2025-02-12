@@ -2,5 +2,8 @@
 - name: Verificar conectividade com máquinas Windows
   hosts: teste
   tasks:
-    - name: Testar conexão com o host Windows
-      win_ping:
+  - name: Testar conexão com o host Windows
+    win_ping:
+  - name: Reproduzir uma mensagem
+    debug:
+      msg: "ESTOU RODEI BEM"
