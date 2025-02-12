@@ -9,7 +9,7 @@
         state: present
     - name: Instalar os pacotes necessarios
       win_chocolatey:
-        name: "{{ item.pacote }}"
+        name: "{{ item }}"
         state: latest
       loop: "{{ pacotes }}"
       
