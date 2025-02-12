@@ -1,0 +1,14 @@
+---
+- name: Instalar pacotes no Windows usando Chocolatey
+  hosts: "{{ windows_ips | join(',') }}"
+  gather_facts: no
+  tasks:
+    - name: Instalar o Chocolatey
+      win_chocolatey:
+        name: chocolatey
+        state: present
+    - name: Instalar os pacotes necessarios
+      win_chocolatey:
+        name: "{{ item.pacote }}"
+        state: latest
+        
