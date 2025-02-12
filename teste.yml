@@ -1,6 +1,6 @@
 ---
 - name: Verificar conectividade com máquinas Windows
-  hosts: all
+  hosts: teste
   tasks:
     - name: Testar conexão com o host Windows
       win_ping:
