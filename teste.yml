@@ -1,7 +1,6 @@
 ---
-- hosts: localhost
-  become: true
+- name: Verificar conectividade com máquinas Windows
+  hosts: windows
   tasks:
-    - name: roda mensagem teste
-      ansible.builtin.debug:
-        msg: "ESTOU FUNCIONANDO"
+    - name: Testar conexão com o host Windows
+      win_ping:
