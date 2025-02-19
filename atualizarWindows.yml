@@ -1,17 +1,21 @@
 ---
-- name: ver se o windows precisa de atualização
-  ansible.windows.win_updates:
-    category_names:
-      - CriticalUpdates
-      - SecurityUpdates
-      - UpdateRollups
-    state: searched
-  register: updates_disponiveis
+- name: Atualizar o Windows
+  hosts: "{{ windows_ips | join(',') }}"
+  gather_facts: yes
+  tasks:
+  - name: ver se o windows precisa de atualização
+    ansible.windows.win_updates:
+      category_names:
+        - CriticalUpdates
+        - SecurityUpdates
+        - UpdateRollups
+      state: searched
+    register: updates_disponiveis
 
-- name: Atualizar o windows
-  win_updates:
-    category_names:
-      - SecurityUpdates
-      - CriticalUpdates
-      - UpdateRollups
-  when: updates_disponiveis.found_update_count > 0
+  - name: Atualizar o windows
+    win_updates:
+      category_names:
+        - SecurityUpdates
+        - CriticalUpdates
+        - UpdateRollups
+    when: updates_disponiveis.found_update_count > 0
