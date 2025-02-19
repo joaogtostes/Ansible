@@ -1,3 +1,4 @@
+---
 - name: ver se o windows precisa de atualização
   ansible.windows.win_updates:
     category_names:
