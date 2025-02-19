@@ -18,4 +18,5 @@
         - SecurityUpdates
         - CriticalUpdates
         - UpdateRollups
+       reboot: yes
     when: updates_disponiveis.found_update_count > 0
