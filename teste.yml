@@ -1,9 +1,0 @@
----
-- name: Verificar conectividade com máquinas Windows
-  hosts: teste
-  tasks:
-  - name: Reproduzir uma mensagem
-    debug:
-      msg: "ESTOU RODEI BEM"
-  - name: gerando um whoami
-    win_whoami:
