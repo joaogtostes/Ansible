@@ -53,11 +53,11 @@
                   args:
                     executable: /bin/bash
                 - name: envia email avisando as mudanças
-                  ansible.builtin.shell: "echo 'RESULTADO DO SCAN\n\n{{ resultado_compara.stdout }}' | mail -s 'RESULTADO SCAN NMAP' joao.tostes@placeti.com.br"
+                  ansible.builtin.shell: "echo 'RESULTADO DO SCAN\n\n{{ resultado_compara.stdout }}' | mail -s 'RESULTADO SCAN NMAP' {{ gmail }}"
               when: status_compara.stdout == "Files /tmp/resultadonmap.txt and /opt/resultadonmap.txt differ"
             - block:
                 - name: envia email avisando as mudanças
-                  ansible.builtin.shell: "echo 'Não houveram mudanças' | mail -s 'RESULTADO SCAN NMAP' joao.tostes@placeti.com.br"
+                  ansible.builtin.shell: "echo 'Não houveram mudanças' | mail -s 'RESULTADO SCAN NMAP' {{ gmail }}"
               when: status_compara.stdout == " "
           ignore_errors: yes
           always:
