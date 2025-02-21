@@ -1,0 +1,68 @@
+- hosts: localhost
+  gather_facts: true
+  become: true
+  tasks:
+    - name: fase de validação
+      block:
+        - name: verificando se existe o pacote mailutils
+          ansible.builtin.package_facts:
+        - name: interromper a playbook
+          ansible.builtin.fail:
+            msg: "Voce precisa instalar o pacote mailutils para rodar essa playbook"
+          when: "'mailutils' not in ansible_facts.packages"
+        - name: Instalar o nmap
+          ansible.builtin.package:
+            name: nmap
+            state: latest
+      rescue:
+        - name: houve uma falha na tarefa
+          debug:
+            msg: "houve uma falha na fase de validação"
+
+    - name: fase de processo
+      block:
+        - name: rodar nmap na rede
+          ansible.builtin.shell: "nmap -p- -T3 -o /tmp/resultadonmap.txt {{ ip }}"
+        - name: verificar se o arquivo resultadonmap.txt ja existe
+          ansible.builtin.stat:
+            path: "/opt/resultadonmap.txt"
+          register: arquivo
+      rescue:
+        - name: houve uma falha na tarefa
+          debug:
+            msg: "houve uma falha na fase de processo"
+
+    - name: fase final
+      block:
+        - block:
+            - name: arquivo nao existe, criando o resultadonmap.txt
+              ansible.builtin.file:
+                path: /opt/resultadonmap.txt
+                state: touch
+              register: arquivo_criado
+          when: not arquivo.stat.exists
+        - name: verificar
+          when: arquivo.stat.exists or arquivo_criado is success
+          block:
+            - name: comparar relatorios
+              ansible.builtin.shell: "diff -w -B -y -q /tmp/resultadonmap.txt /opt/resultadonmap.txt"
+              register: status_compara
+            - block:
+                - ansible.builtin.shell: "diff <(grep -E 'Nmap scan report for|open' /tmp/resultadonmap.txt) <(grep -E 'Nmap scan report for|open' /opt/resultadonmap.txt)"
+                  register: resultado_compara
+                  args:
+                    executable: /bin/bash
+                - name: envia email avisando as mudanças
+                  ansible.builtin.shell: "echo 'RESULTADO DO SCAN\n\n{{ resultado_compara.stdout }}' | mail -s 'RESULTADO SCAN NMAP' joao.tostes@placeti.com.br"
+              when: status_compara.stdout == "Files /tmp/resultadonmap.txt and /opt/resultadonmap.txt differ"
+            - block:
+                - name: envia email avisando as mudanças
+                  ansible.builtin.shell: "echo 'Não houveram mudanças' | mail -s 'RESULTADO SCAN NMAP' joao.tostes@placeti.com.br"
+              when: status_compara.stdout == " "
+          ignore_errors: yes
+          always:
+            - ansible.builtin.shell: "cp /tmp/resultadonmap.txt /opt/resultadonmap.txt"
+      rescue:
+        - name: houve uma falha na tarefa
+          debug:
+            msg: "houve uma falha na fase final"
