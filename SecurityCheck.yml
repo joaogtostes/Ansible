@@ -1,0 +1,131 @@
+---
+- name: Check de Seguranca
+  hosts: "{{ windows_ips | join(',') }}"
+  gather_facts: yes
+  tasks:
+    - name: update ubuntu/debian
+      ansible.builtin.shell: "apt-get update -y"
+      when: ansible_distribution == "Ubuntu"
+    - name: update centos
+      ansible.builtin.shell: "yum update -y"
+      when: ansible_distribution == "CentOS"
+    - name: check de osquery
+      block:
+        - name: check se osquery existe
+          ansible.builtin.package_facts:
+        - name: osquery existe
+          when: "'osquery' in ansible_facts.packages"
+          block:
+            - name: parar osqueryd
+              ansible.builtin.service:
+                name: osqueryd
+                state: stopped
+            - name: instalar auditd
+              ansible.builtin.package:
+                name: auditd
+                state: latest
+              notify:
+                - start audit
+                - start osqueryd
+        - name: osqueryd nao existe
+          when: "'osquery' not in ansible_facts.packages"
+          block:
+            - name: instala o auditd
+              ansible.builtin.package:
+                name: auditd
+                state: latest
+              notify: start auditd
+            - name: instala o osqueryd
+              ansible.builtin.package:
+                name: osquery
+                state: latest
+              notify: start osquery
+      rescue:
+        - debug:
+            msg: "Erro na fase de instalação do osquery ou auditd"
+    - name: instalar fail2ban
+      when: "'nginx' in ansible_facts.packages"
+      block:
+        - name: instalar fail2ban
+          ansible.builtin.package:
+            name: fail2ban
+            state: latest
+        - name: levar o template
+          ansible.builtin.template:
+            src: "templates/{{ item }}"
+            dest: "/etc/fail2ban/{{ item }}"
+          loop:
+            - fail2ban.local
+            - jail.local
+        - name: startar fail2ban
+          ansible.builtin.service:
+            name: fail2ban
+            state: started
+            enabled: true
+      rescue:
+        - debug:
+            msg: "Houve um erro ao instalar o fail2ban"
+    - debug:
+        msg: "Nginx nao existe, nao precisa instalar o fail2ban"
+      when: "'nginx' not in ansible_facts.packages"
+
+    - name: instalar o WAZUH
+      when: ansible_default_ipv4.address | regex_search('^192.168.23.')
+      block:
+        - name: instalar o wazuh
+          ansible.builtin.shell: "wget https://packages.wazuh.com/4.x/apt/pool/main/w/wazuh-agent/wazuh-agent_4.9.0-1_amd64.deb && sudo WAZUH_MANAGER='192.168.23.45' WAZUH_AGENT_GROUP='endpoints' WAZUH_AGENT_NAME='{{ ansible_hostname }}' dpkg -i ./wazuh-agent_4.9.0-1_amd64.deb"
+        - name: startar servico wazuh
+          ansible.builtin.service:
+            name: wazuh-agent
+            state: started
+            enabled: true
+      rescue:
+        - debug:
+            msg: "Erro ao instalar o wazuh"
+            
+    - name: instalar o rkhunter
+      block:
+        - name: instala o rkhunter
+          ansible.builtin.package:
+            name: rkhunter
+            state: latest
+        - name: joga a configuração
+          ansible.builtin.template:
+            src: template/rkhunter.conf
+            dest: /etc/rkhunter.conf
+        - name: start rkhunter service
+          ansible.builtin.service:
+            name: rkhunter
+            state: started
+            enabled: true
+        - name: Agendar execução diária do rkhunter às 00h
+          ansible.builtin.cron:
+            name: "Executar rkhunter diariamente às 00h"
+            user: root
+            minute: "0"
+            hour: "0"
+            job: "/usr/bin/rkhunter --cronjob --report-warnings-only"
+            state: present
+      rescue:
+        - debug:
+            msg: "Erro ao instalar e configurar o rkhunter"
+
+    - name: averiguar configuração do sshd_config
+      ansible.builtin.shell: "grep -E '^(Port|PermitRootLogin|MaxAuthTries|LoginGraceTime|Protocol|PermitEmptyPasswords|X11Forwarding|ClientAliveInterval|AllowUsers)' /etc/ssh/sshd_config"
+      register: saida_ssh
+    - name: mostrar saida ssh
+      debug:
+        msg: "{{ saida_ssh.stdout }}"
+      
+handlers:
+  - name: start audit
+    ansible.builtin.service:
+      name: auditd
+      state: started
+      enabled: true
+  - name: start osqueryd
+    ansible.builtin.service:
+      name: osqueryd
+      state: started
+      enabled: true
+        
