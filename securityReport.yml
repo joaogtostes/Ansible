@@ -1,0 +1,31 @@
+---
+- name: Relatório de segurança
+  hosts: "{{ windows_ips | join(',') }}"
+  gather_facts: yes
+  tasks:
+    - name: copy template
+      ansible.builtin.template:
+        src: templates/reportSecurity.txt
+        dest: /etc/reportSecurity.txt
+    - ansible.builtin.package_facts:
+    - ansible.builtin.lineinfile:
+        path: /etc/reportSecurity.txt
+        regexp: "^AUDITD="
+        line: "AUDITD={{ 'auditd' in ansible_facts.packages }}"
+    - ansible.builtin.lineinfile:
+        path: /etc/reportSecurity.txt
+        regexp: "^WAZUH="
+        line: "WAZUH={{ 'wazuh-agent' in ansible_facts.packages }}"
+    - ansible.builtin.lineinfile:
+        path: /etc/reportSecurity.txt
+        regexp: "RKHUNTER="
+        line: "RKHUNTER={{ 'rkhunter' in ansible_facts.packages }}"
+    - ansible.builtin.lineinfile:
+        path: /etc/reportSecurity.txt
+        regexp: "OSQUERY="
+        line: "OSQUERY={{ 'osquery' in ansible_facts.packages }}"
+    - ansible.builtin.lineinfile:
+        path: /etc/reportSecurity.txt
+        regexp: "FAIL2BAN="
+        line: "FAIL2BAN={{ 'rkhunter' in ansible_facts.packages }}"
+      when: "'nginx' in ansible_facts.packages"
