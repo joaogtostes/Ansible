@@ -27,5 +27,5 @@
     - ansible.builtin.lineinfile:
         path: /etc/reportSecurity.txt
         regexp: "FAIL2BAN="
-        line: "FAIL2BAN={{ 'rkhunter' in ansible_facts.packages }}"
+        line: "FAIL2BAN={{ 'fail2ban' in ansible_facts.packages }}"
       when: "'nginx' in ansible_facts.packages"
