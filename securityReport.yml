@@ -1,6 +1,6 @@
 ---
 - name: Relatório de segurança
-  hosts: "{{ windows_ips | join(',') }}"
+  hosts: "{{ linux_ips | join(',') }}"
   gather_facts: yes
   tasks:
     - name: copy template
