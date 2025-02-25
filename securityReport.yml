@@ -29,3 +29,8 @@
         regexp: "FAIL2BAN="
         line: "FAIL2BAN={{ 'fail2ban' in ansible_facts.packages }}"
       when: "'nginx' in ansible_facts.packages"
+    - name: Mostrar resultado
+      ansible.builtin.shell: "cat /etc/reportSecurity.txt"
+      register: resultado
+    - debug:
+        msg: "{{ resultado.stdout }}"
