@@ -1,0 +1,20 @@
+---
+- name: Desinstalar pacote
+  hosts: "{{ linux_ips | join(',') }}"
+  gather_facts: yes
+  tasks:
+    - name: identificar os pacotes que existem
+      ansible.builtin.package_facts:
+    - block:
+        - name: pacote nao instalado
+          debug:
+            msg: "O pacote nao esta instalado"
+          when: "'rkhunter' not in ansible_facts.packages"
+        - name: pacote está instalado
+          ansible.builtin.package:
+            name: rkhunter
+            state: absent
+          when: "'rkhunter' in ansible_facts.packages"
+      rescue:
+        - debug:
+            msg: "Houve um erro no processo de desinstalação de pacote"
