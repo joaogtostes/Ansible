@@ -1,6 +1,7 @@
 ---
 - name: Desinstalar pacote
   hosts: "{{ linux_ips | join(',') }}"
+  become: true
   gather_facts: yes
   tasks:
     - name: identificar os pacotes que existem
