@@ -1,0 +1,21 @@
+---
+- name: Instalar pacote
+  hosts: "{{ linux_ips | join(',') }}"
+  become: true
+  gather_facts: yes
+  tasks:
+    - name: identificar os pacotes que existem
+      ansible.builtin.package_facts:
+    - block:
+        - name: pacote instalado
+          debug:
+            msg: "O pacote esta instalado"
+          when: "'rkhunter' in ansible_facts.packages"
+        - name: pacote não está instalado
+          ansible.builtin.package:
+            name: rkhunter
+            state: present
+          when: "'rkhunter' not in ansible_facts.packages"
+      rescue:
+        - debug:
+            msg: "Houve um erro no processo de instalação de pacote"
