@@ -1,0 +1,7 @@
+---
+- name: Scan de SOPHOS
+  hosts: "{{ windows_ips | join(',') }}"
+  gather_facts: yes
+  tasks:
+    - name: iniciando scan de sophos
+      ansible.windows.win_shell: "& "C:\Program Files\Sophos\Endpoint Defense\sophosinterceptxcli.exe" scan --system"
