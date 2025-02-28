@@ -48,6 +48,8 @@
               ansible.builtin.shell: |
                 diff -w -B -y -q <(grep -E 'Nmap scan report|^[0-9]+/tcp' /tmp/resultadonmap.txt | awk '/Nmap/{printf "\n%s\n\n", $NF} /^[0-9]+\/tcp/{printf "%-20s %-10s %-10s\n", $NF, $(NF-1), $1}') <(grep -E 'Nmap scan report|^[0-9]+/tcp' /opt/resultadonmap.txt | awk '/Nmap/{printf "\n%s\n\n", $NF} /^[0-9]+\/tcp/{printf "%-20s %-10s %-10s\n", $NF, $(NF-1), $1}')
               register: status_compara
+              args:
+                executable: /bin/bash
             - block:
                 - ansible.builtin.shell: |
                     diff -w -B -y <(grep -E 'Nmap scan report|^[0-9]+/tcp' /tmp/resultadonmap.txt | awk '/Nmap/{printf "\n%s\n\n", $NF} /^[0-9]+\/tcp/{printf "%-20s %-10s %-10s\n", $NF, $(NF-1), $1}') <(grep -E 'Nmap scan report|^[0-9]+/tcp' /opt/resultadonmap.txt | awk '/Nmap/{printf "\n%s\n\n", $NF} /^[0-9]+\/tcp/{printf "%-20s %-10s %-10s\n", $NF, $(NF-1), $1}')
